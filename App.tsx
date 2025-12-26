@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ViewRole } from './types';
 import { EmployeeView } from './components/EmployeeView';
@@ -23,12 +22,12 @@ const App: React.FC = () => {
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // 更新密码为 123
-    if (adminPassword === '12') {
+    // 验证密码为 123
+    if (adminPassword === '123') {
       setIsLoggedIn(true);
       setError(null);
     } else {
-      setError('密码出现错误');
+      setError('密码错误');
     }
   };
 
