@@ -134,7 +134,7 @@ const App: React.FC = () => {
           ) : (
             <form onSubmit={handleAdminLogin} className="space-y-8">
               <div className="text-center">
-                <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">控制中心授权</h3>
+                <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">信息管理后台</h3>
                 <p className="text-slate-500 text-sm">请输入管理密钥以进入后台系统</p>
               </div>
               <div className="space-y-4">

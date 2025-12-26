@@ -1,28 +1,65 @@
 
 import { RegistrationData } from '../types';
 
+/**
+ * 💡 配置说明：
+ * 部署 Google Apps Script 后，将生成的 Web App URL 粘贴在下方。
+ * 如果为空，系统将自动使用浏览器的 localStorage（仅限本机）。
+ */
+const API_ENDPOINT = ''; 
+
 const STORAGE_KEY = 'annual_meeting_registrations_2026';
 
-export const getRegistrations = (): RegistrationData[] => {
+// 内部辅助函数：本地降级方案
+const getLocalRegistrations = (): RegistrationData[] => {
   const data = localStorage.getItem(STORAGE_KEY);
   return data ? JSON.parse(data) : [];
 };
 
-export const saveRegistration = (data: RegistrationData): void => {
-  const registrations = getRegistrations();
-  const index = registrations.findIndex(r => r.employeeId === data.employeeId);
-  
-  if (index >= 0) {
-    registrations[index] = data;
-  } else {
-    registrations.push(data);
+export const getRegistrations = async (): Promise<RegistrationData[]> => {
+  if (!API_ENDPOINT) {
+    return getLocalRegistrations();
   }
   
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(registrations));
+  try {
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'getAll' }),
+      mode: 'cors'
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Fetch error:', error);
+    return getLocalRegistrations();
+  }
 };
 
-export const getRegistrationByEmployeeId = (id: string): RegistrationData | undefined => {
-  const registrations = getRegistrations();
+export const saveRegistration = async (data: RegistrationData): Promise<boolean> => {
+  if (!API_ENDPOINT) {
+    const registrations = getLocalRegistrations();
+    const index = registrations.findIndex(r => r.employeeId === data.employeeId);
+    if (index >= 0) registrations[index] = data;
+    else registrations.push(data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(registrations));
+    return true;
+  }
+
+  try {
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'save', registration: data }),
+      mode: 'cors'
+    });
+    const result = await response.json();
+    return result.result === 'success';
+  } catch (error) {
+    console.error('Save error:', error);
+    return false;
+  }
+};
+
+export const getRegistrationByEmployeeId = async (id: string): Promise<RegistrationData | undefined> => {
+  const registrations = await getRegistrations();
   return registrations.find(r => r.employeeId === id);
 };
 

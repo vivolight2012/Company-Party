@@ -22,28 +22,35 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
     participantList: '',
   });
   const [isViewMode, setIsViewMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
   useEffect(() => {
-    const existing = getRegistrationByEmployeeId(initialId);
-    if (existing) {
-      setFormData({
-        name: existing.name,
-        employeeId: existing.employeeId,
-        department: existing.department || '',
-        recommendedProgram: existing.recommendedProgram,
-        programName: existing.programName,
-        programType: existing.programType,
-        participantCount: existing.participantCount,
-        participantList: existing.participantList || '',
-      });
-      setLastUpdated(existing.timestamp);
-      setIsViewMode(true);
-    }
+    const checkExisting = async () => {
+      setIsLoading(true);
+      const existing = await getRegistrationByEmployeeId(initialId);
+      if (existing) {
+        setFormData({
+          name: existing.name,
+          employeeId: existing.employeeId,
+          department: existing.department || '',
+          recommendedProgram: existing.recommendedProgram,
+          programName: existing.programName,
+          programType: existing.programType,
+          participantCount: existing.participantCount,
+          participantList: existing.participantList || '',
+        });
+        setLastUpdated(existing.timestamp);
+        setIsViewMode(true);
+      }
+      setIsLoading(false);
+    };
+    checkExisting();
   }, [initialId]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.employeeId.trim() || !formData.department) {
       setMessage({ type: 'error', text: '请填写完整的姓名、工号和部门' });
@@ -55,30 +62,27 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
       return;
     }
 
-    if (formData.participantCount === '多人' && !formData.participantList?.trim()) {
-      setMessage({ type: 'error', text: '请填写参演人员名单' });
-      return;
-    }
-
+    setIsSubmitting(true);
     const timestamp = new Date().toLocaleString();
-    const isUpdate = !!getRegistrationByEmployeeId(formData.employeeId);
     
-    saveRegistration({
+    const success = await saveRegistration({
       ...formData,
       id: formData.employeeId,
       timestamp: timestamp,
     } as RegistrationData);
 
-    setLastUpdated(timestamp);
-    setMessage({ 
-      type: 'success', 
-      text: isUpdate ? '更新成功！' : '报名成功！' 
-    });
+    setIsSubmitting(false);
 
-    setTimeout(() => {
-      setMessage(null);
-      setIsViewMode(true);
-    }, 1500);
+    if (success) {
+      setLastUpdated(timestamp);
+      setMessage({ type: 'success', text: '同步云端成功！' });
+      setTimeout(() => {
+        setMessage(null);
+        setIsViewMode(true);
+      }, 1500);
+    } else {
+      setMessage({ type: 'error', text: '网络连接失败，请稍后重试' });
+    }
   };
 
   const handleClear = () => {
@@ -92,6 +96,15 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
     }));
   };
 
+  if (isLoading) {
+    return (
+      <div className="max-w-2xl mx-auto mt-8 p-12 glass rounded-2xl flex flex-col items-center justify-center gap-4">
+        <div className="w-10 h-10 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
+        <p className="text-slate-400 font-medium">正在同步云端数据...</p>
+      </div>
+    );
+  }
+
   if (isViewMode) {
     return (
       <div className="max-w-2xl mx-auto mt-8 p-8 glass rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-500">
@@ -100,14 +113,14 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
             <h2 className="text-2xl font-bold text-green-400 flex items-center gap-2">
               <span className="text-xl">✅</span> 报名信息确认
             </h2>
-            <p className="text-xs text-slate-500 mt-1 italic">最后更新: {lastUpdated}</p>
+            <p className="text-xs text-slate-500 mt-1 italic">最后同步: {lastUpdated}</p>
           </div>
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsViewMode(false)}
               className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-all bg-blue-400/10 px-4 py-2 rounded-lg border border-blue-400/20"
             >
-              修改
+              修改报名
             </button>
           </div>
         </div>
@@ -161,7 +174,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
               className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-900/20 transform active:scale-[0.98] transition-all flex items-center justify-center gap-2"
             >
               <span>确认</span>
-              <span className="text-xs font-normal opacity-70">(返回主页面)</span>
+              <span className="text-xs font-normal opacity-70">(返回首页)</span>
             </button>
           </div>
         </div>
@@ -174,7 +187,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-2xl font-bold text-blue-400">年会报名登记</h2>
-          <p className="text-xs text-slate-500 mt-1">请填写您的年会参与意向</p>
+          <p className="text-xs text-slate-500 mt-1">请填写您的年会参与意向，数据将自动同步至管理后台</p>
         </div>
       </div>
 
@@ -202,7 +215,6 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
           </div>
         </div>
 
-        {/* 部门和参演人数 同一行 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           <div>
             <label className="block text-sm font-medium mb-2 text-slate-300">部门</label>
@@ -312,22 +324,30 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
           <button
             type="button"
             onClick={onLogout}
-            className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] border border-slate-700"
+            disabled={isSubmitting}
+            className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] border border-slate-700 disabled:opacity-50"
           >
             返回
           </button>
           <button
             type="button"
             onClick={handleClear}
-            className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] border border-slate-700"
+            disabled={isSubmitting}
+            className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] border border-slate-700 disabled:opacity-50"
           >
-            清除
+            重置
           </button>
           <button
             type="submit"
-            className="flex-[2] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-xl shadow-blue-900/20 transform active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            disabled={isSubmitting}
+            className="flex-[2] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-xl shadow-blue-900/20 transform active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            保存并提交
+            {isSubmitting ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                同步中...
+              </>
+            ) : '保存并提交'}
           </button>
         </div>
       </form>
