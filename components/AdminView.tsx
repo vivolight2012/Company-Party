@@ -8,7 +8,8 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
 
   const filteredData = registrations.filter(
     r => r.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-         r.employeeId.includes(searchTerm)
+         r.employeeId.includes(searchTerm) ||
+         r.department.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -22,7 +23,7 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <input
             type="text"
-            placeholder="搜索姓名或工号..."
+            placeholder="搜索姓名、工号或部门..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-full md:w-64"
@@ -47,9 +48,10 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           <thead className="bg-slate-800/80 text-slate-300 font-medium">
             <tr>
               <th className="px-6 py-4">姓名</th>
-              <th className="px-6 py-4">工号</th>
+              <th className="px-6 py-4">工号/部门</th>
+              <th className="px-6 py-4">节目名称</th>
+              <th className="px-6 py-4">类型/人数</th>
               <th className="px-6 py-4">节目推荐</th>
-              <th className="px-6 py-4">个人节目</th>
               <th className="px-6 py-4">报名时间</th>
             </tr>
           </thead>
@@ -58,15 +60,29 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
               filteredData.map((reg) => (
                 <tr key={reg.employeeId} className="hover:bg-slate-700/30 transition-colors">
                   <td className="px-6 py-4 font-medium text-white">{reg.name}</td>
-                  <td className="px-6 py-4 text-slate-400">{reg.employeeId}</td>
-                  <td className="px-6 py-4 text-slate-300 max-w-xs truncate">{reg.recommendedProgram}</td>
-                  <td className="px-6 py-4 text-slate-300 max-w-xs truncate">{reg.personalProgram || <span className="text-slate-600">无</span>}</td>
+                  <td className="px-6 py-4">
+                    <div className="text-slate-400">{reg.employeeId}</div>
+                    <div className="text-xs text-slate-500">{reg.department}</div>
+                  </td>
+                  <td className="px-6 py-4 text-slate-300">
+                    <div>{reg.programName}</div>
+                    {reg.participantCount === '多人' && (
+                       <div className="text-xs text-slate-500 italic mt-1 max-w-[150px] truncate" title={reg.participantList}>
+                         成员: {reg.participantList}
+                       </div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-slate-300">
+                    <span className="px-2 py-1 rounded bg-slate-800 text-xs mr-1">{reg.programType}</span>
+                    <span className="text-xs text-slate-500">{reg.participantCount}</span>
+                  </td>
+                  <td className="px-6 py-4 text-slate-300 max-w-[150px] truncate">{reg.recommendedProgram || '-'}</td>
                   <td className="px-6 py-4 text-xs text-slate-500">{reg.timestamp}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-slate-500 italic">
+                <td colSpan={6} className="px-6 py-12 text-center text-slate-500 italic">
                   未找到匹配的报名记录
                 </td>
               </tr>

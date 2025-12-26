@@ -8,12 +8,18 @@ interface EmployeeViewProps {
   onLogout: () => void;
 }
 
+const DEPARTMENTS = ['研发', '生产', '质量', '客服', '销售', '市场', '人资', '财务'];
+
 export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout }) => {
   const [formData, setFormData] = useState<Omit<RegistrationData, 'timestamp' | 'id'>>({
     name: '',
     employeeId: initialId,
+    department: '',
     recommendedProgram: '',
-    personalProgram: '',
+    programName: '',
+    programType: '唱歌',
+    participantCount: '单人',
+    participantList: '',
   });
   const [isViewMode, setIsViewMode] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -25,8 +31,12 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
       setFormData({
         name: existing.name,
         employeeId: existing.employeeId,
+        department: existing.department || '',
         recommendedProgram: existing.recommendedProgram,
-        personalProgram: existing.personalProgram,
+        programName: existing.programName,
+        programType: existing.programType,
+        participantCount: existing.participantCount,
+        participantList: existing.participantList || '',
       });
       setLastUpdated(existing.timestamp);
       setIsViewMode(true);
@@ -35,13 +45,18 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.employeeId.trim()) {
-      setMessage({ type: 'error', text: '请填写完整的姓名和工号' });
+    if (!formData.name.trim() || !formData.employeeId.trim() || !formData.department) {
+      setMessage({ type: 'error', text: '请填写完整的姓名、工号和部门' });
       return;
     }
 
-    if (!formData.personalProgram.trim()) {
-      setMessage({ type: 'error', text: '请填写个人报名节目' });
+    if (!formData.programName.trim()) {
+      setMessage({ type: 'error', text: '请填写节目名称' });
+      return;
+    }
+
+    if (formData.participantCount === '多人' && !formData.participantList?.trim()) {
+      setMessage({ type: 'error', text: '请填写参演人员名单' });
       return;
     }
 
@@ -52,7 +67,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
       ...formData,
       id: formData.employeeId,
       timestamp: timestamp,
-    });
+    } as RegistrationData);
 
     setLastUpdated(timestamp);
     setMessage({ 
@@ -60,7 +75,6 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
       text: isUpdate ? '更新成功！' : '报名成功！' 
     });
 
-    // 延迟切换到预览模式，让用户看到成功提示
     setTimeout(() => {
       setMessage(null);
       setIsViewMode(true);
@@ -71,7 +85,10 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
     setFormData(prev => ({
       ...prev,
       recommendedProgram: '',
-      personalProgram: '',
+      programName: '',
+      programType: '唱歌',
+      participantCount: '单人',
+      participantList: '',
     }));
   };
 
@@ -96,7 +113,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
         </div>
 
         <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/50">
               <span className="block text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">员工姓名</span>
               <span className="text-lg text-white font-medium">{formData.name}</span>
@@ -105,18 +122,37 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
               <span className="block text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">工号</span>
               <span className="text-lg text-white font-medium">{formData.employeeId}</span>
             </div>
+            <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/50">
+              <span className="block text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">部门</span>
+              <span className="text-lg text-white font-medium">{formData.department}</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+             <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/50">
+              <span className="block text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">节目名称</span>
+              <span className="text-md text-white font-medium">{formData.programName}</span>
+            </div>
+            <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800/50">
+              <span className="block text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">节目类型</span>
+              <span className="text-md text-white font-medium">{formData.programType}</span>
+            </div>
+          </div>
+
+          <div className="bg-slate-900/60 p-5 rounded-xl border border-slate-800/50">
+            <span className="block text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">参演人数</span>
+            <span className="text-md text-white font-medium">{formData.participantCount}</span>
+            {formData.participantCount === '多人' && (
+              <div className="mt-3 pt-3 border-t border-slate-700/50">
+                <span className="block text-xs text-slate-500 uppercase font-bold tracking-wider mb-2">人员名单</span>
+                <p className="text-slate-200 text-sm whitespace-pre-wrap">{formData.participantList}</p>
+              </div>
+            )}
           </div>
 
           <div className="bg-slate-900/60 p-5 rounded-xl border border-slate-800/50">
             <span className="block text-xs text-slate-500 uppercase font-bold tracking-wider mb-2">节目推荐</span>
-            <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{formData.recommendedProgram}</p>
-          </div>
-
-          <div className="bg-slate-900/60 p-5 rounded-xl border border-slate-800/50">
-            <span className="block text-xs text-slate-500 uppercase font-bold tracking-wider mb-2">个人报名节目</span>
-            <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
-              {formData.personalProgram || <span className="text-slate-600 italic">暂未填写个人节目</span>}
-            </p>
+            <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{formData.recommendedProgram || '无'}</p>
           </div>
 
           <div className="pt-6 border-t border-slate-800/50">
@@ -166,6 +202,92 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
           </div>
         </div>
 
+        {/* 部门和参演人数 同一行 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-slate-300">部门</label>
+            <select
+              value={formData.department}
+              onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+              className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-white"
+              required
+            >
+              <option value="" disabled>请选择部门</option>
+              {DEPARTMENTS.map(dept => (
+                <option key={dept} value={dept}>{dept}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-3 text-slate-300">参演人数</label>
+            <div className="flex gap-6 h-[42px] items-center">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="radio"
+                  name="participantCount"
+                  value="单人"
+                  checked={formData.participantCount === '单人'}
+                  onChange={() => setFormData(prev => ({ ...prev, participantCount: '单人' }))}
+                  className="w-4 h-4 text-blue-600 bg-slate-900 border-slate-700 focus:ring-blue-500 focus:ring-offset-slate-900"
+                />
+                <span className="text-slate-300 group-hover:text-white transition-colors">单人</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="radio"
+                  name="participantCount"
+                  value="多人"
+                  checked={formData.participantCount === '多人'}
+                  onChange={() => setFormData(prev => ({ ...prev, participantCount: '多人' }))}
+                  className="w-4 h-4 text-blue-600 bg-slate-900 border-slate-700 focus:ring-blue-500 focus:ring-offset-slate-900"
+                />
+                <span className="text-slate-300 group-hover:text-white transition-colors">多人</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-slate-300">节目名称</label>
+            <input
+              type="text"
+              value={formData.programName}
+              onChange={(e) => setFormData(prev => ({ ...prev, programName: e.target.value }))}
+              className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-white placeholder-slate-600"
+              placeholder="请输入节目名称"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2 text-slate-300">节目类型</label>
+            <select
+              value={formData.programType}
+              onChange={(e) => setFormData(prev => ({ ...prev, programType: e.target.value as any }))}
+              className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-white"
+            >
+              <option value="唱歌">唱歌</option>
+              <option value="跳舞">跳舞</option>
+              <option value="小品">小品</option>
+              <option value="弹奏">弹奏</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+        </div>
+
+        {formData.participantCount === '多人' && (
+          <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+            <label className="block text-sm font-medium mb-2 text-slate-300">参演人员名单</label>
+            <textarea
+              value={formData.participantList}
+              onChange={(e) => setFormData(prev => ({ ...prev, participantList: e.target.value }))}
+              className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all h-24 resize-none text-white text-sm"
+              placeholder="请填写所有参与者的姓名和工号"
+              required={formData.participantCount === '多人'}
+            />
+          </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium mb-2 text-slate-300 flex justify-between">
             <span>节目推荐</span>
@@ -174,23 +296,8 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
           <textarea
             value={formData.recommendedProgram}
             onChange={(e) => setFormData(prev => ({ ...prev, recommendedProgram: e.target.value }))}
-            className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all h-28 resize-none text-white text-sm"
+            className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all h-24 resize-none text-white text-sm"
             placeholder="你希望在年会上看到什么样的节目？或者你觉得哪位同事很有才华？"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2 text-slate-300 flex justify-between">
-            <span>个人报名节目</span>
-            <span className="text-xs text-slate-500 font-normal">(必填 - 自己想演的节目)</span>
-          </label>
-          <textarea
-            value={formData.personalProgram}
-            onChange={(e) => setFormData(prev => ({ ...prev, personalProgram: e.target.value }))}
-            className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all h-28 resize-none text-white text-sm"
-            placeholder="如果您愿意一展歌喉或舞姿，请在此填写节目名称或描述"
-            required
           />
         </div>
 

@@ -27,12 +27,16 @@ export const getRegistrationByEmployeeId = (id: string): RegistrationData | unde
 };
 
 export const exportToCSV = (data: RegistrationData[]) => {
-  const headers = ['姓名', '工号', '节目推荐', '个人报名节目', '报名时间'];
+  const headers = ['姓名', '工号', '部门', '节目推荐', '节目名称', '节目类型', '参演人数', '参演人员名单', '报名时间'];
   const rows = data.map(r => [
     r.name,
     r.employeeId,
-    `"${r.recommendedProgram.replace(/"/g, '""')}"`,
-    `"${r.personalProgram.replace(/"/g, '""')}"`,
+    r.department,
+    `"${(r.recommendedProgram || '').replace(/"/g, '""')}"`,
+    `"${(r.programName || '').replace(/"/g, '""')}"`,
+    r.programType,
+    r.participantCount,
+    `"${(r.participantList || '').replace(/"/g, '""')}"`,
     r.timestamp
   ]);
 
