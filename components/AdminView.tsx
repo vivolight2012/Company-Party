@@ -73,12 +73,14 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           </div>
         ) : (
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-800/80 text-slate-300 font-medium">
+            <thead className="bg-slate-800/80 text-slate-300 font-medium whitespace-nowrap">
               <tr>
                 <th className="px-6 py-4">姓名</th>
-                <th className="px-6 py-4">工号/部门</th>
+                <th className="px-6 py-4">工号</th>
+                <th className="px-6 py-4">部门</th>
                 <th className="px-6 py-4">节目名称</th>
-                <th className="px-6 py-4">类型/人数</th>
+                <th className="px-6 py-4">类型</th>
+                <th className="px-6 py-4">人数</th>
                 <th className="px-6 py-4">节目推荐</th>
                 <th className="px-6 py-4">最后更新</th>
               </tr>
@@ -88,10 +90,8 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 filteredData.map((reg) => (
                   <tr key={reg.employeeId} className="hover:bg-slate-700/30 transition-colors">
                     <td className="px-6 py-4 font-medium text-white">{reg.name}</td>
-                    <td className="px-6 py-4">
-                      <div className="text-slate-400">{reg.employeeId}</div>
-                      <div className="text-xs text-slate-500">{reg.department}</div>
-                    </td>
+                    <td className="px-6 py-4 text-slate-400 font-mono">{reg.employeeId}</td>
+                    <td className="px-6 py-4 text-slate-300">{reg.department}</td>
                     <td className="px-6 py-4 text-slate-300">
                       <div>{reg.programName}</div>
                       {reg.participantCount === '多人' && (
@@ -100,17 +100,17 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                          </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-slate-300">
-                      <span className="px-2 py-1 rounded bg-slate-800 text-xs mr-1">{reg.programType}</span>
-                      <span className="text-xs text-slate-500">{reg.participantCount}</span>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 rounded bg-slate-800 text-xs text-indigo-300 border border-slate-700">{reg.programType}</span>
                     </td>
+                    <td className="px-6 py-4 text-slate-300">{reg.participantCount}</td>
                     <td className="px-6 py-4 text-slate-300 max-w-[150px] truncate">{reg.recommendedProgram || '-'}</td>
                     <td className="px-6 py-4 text-xs text-slate-500">{reg.timestamp}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500 italic">
+                  <td colSpan={8} className="px-6 py-12 text-center text-slate-500 italic">
                     未找到匹配的报名记录
                   </td>
                 </tr>

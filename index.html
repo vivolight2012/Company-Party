@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -6,6 +7,18 @@
     <title>2026公司年会盛典报名系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- 1. 引入 Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 4. 配置 SUPABASE_URL 和 SUPABASE_ANON_KEY -->
+    <script>
+        window.SUPABASE_CONFIG = {
+            url: 'https://你的项目ID.supabase.co', // 请替换为你的 Supabase URL
+            anonKey: '你的匿名Key' // 请替换为你的 Supabase Anon Key
+        };
+    </script>
+
     <style>
         body {
             font-family: 'Inter', 'Noto Sans SC', sans-serif;
@@ -19,7 +32,6 @@
             position: relative;
         }
 
-        /* 模拟图片中的垂直彩色流光背景 */
         .laser-wall {
             position: fixed;
             top: 0;
@@ -43,12 +55,6 @@
         .laser-line:nth-child(even) {
             background: linear-gradient(to bottom, transparent, rgba(236, 72, 153, 0.4), rgba(59, 130, 246, 0.4), transparent);
             box-shadow: 0 0 8px rgba(236, 72, 153, 0.3);
-        }
-
-        @keyframes scan {
-            0% { transform: translateY(-100%); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translateY(100%); opacity: 0; }
         }
 
         .particle {
@@ -89,7 +95,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* 隐藏滚动条 */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
@@ -109,7 +114,6 @@
     <div class="laser-wall" id="laserWall"></div>
     <div id="root"></div>
     <script>
-        // 动态生成激光线条
         const wall = document.getElementById('laserWall');
         for (let i = 0; i < 50; i++) {
             const line = document.createElement('div');
@@ -118,7 +122,6 @@
             line.style.opacity = (Math.random() * 0.4 + 0.1).toString();
             wall.appendChild(line);
         }
-        // 动态生成星星
         for (let i = 0; i < 100; i++) {
             const p = document.createElement('div');
             p.className = 'particle';

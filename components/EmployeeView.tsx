@@ -24,7 +24,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
   const [isViewMode, setIsViewMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error' | 'warning', text: string } | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
     setIsSubmitting(true);
     const timestamp = new Date().toLocaleString();
     
-    const success = await saveRegistration({
+    const result = await saveRegistration({
       ...formData,
       id: formData.employeeId,
       timestamp: timestamp,
@@ -73,15 +73,20 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
 
     setIsSubmitting(false);
 
-    if (success) {
+    if (result.success) {
       setLastUpdated(timestamp);
-      setMessage({ type: 'success', text: '同步云端成功！' });
+      if (result.mode === 'cloud') {
+        setMessage({ type: 'success', text: '同步云端成功！' });
+      } else {
+        setMessage({ type: 'warning', text: '网络受限，已保存至本地缓存' });
+      }
+      
       setTimeout(() => {
         setMessage(null);
         setIsViewMode(true);
-      }, 1500);
+      }, 2000);
     } else {
-      setMessage({ type: 'error', text: '网络连接失败，请稍后重试' });
+      setMessage({ type: 'error', text: '提交失败，请检查网络后重试' });
     }
   };
 
@@ -100,7 +105,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
     return (
       <div className="max-w-2xl mx-auto mt-8 p-12 glass rounded-2xl flex flex-col items-center justify-center gap-4">
         <div className="w-10 h-10 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
-        <p className="text-slate-400 font-medium">正在同步云端数据...</p>
+        <p className="text-slate-400 font-medium">正在同步数据...</p>
       </div>
     );
   }
@@ -113,7 +118,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
             <h2 className="text-2xl font-bold text-green-400 flex items-center gap-2">
               <span className="text-xl">✅</span> 报名信息确认
             </h2>
-            <p className="text-xs text-slate-500 mt-1 italic">最后同步: {lastUpdated}</p>
+            <p className="text-xs text-slate-500 mt-1 italic">最后保存: {lastUpdated}</p>
           </div>
           <div className="flex items-center gap-3">
             <button 
@@ -187,7 +192,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-2xl font-bold text-blue-400">年会报名登记</h2>
-          <p className="text-xs text-slate-500 mt-1">请填写您的年会参与意向，数据将自动同步至管理后台</p>
+          <p className="text-xs text-slate-500 mt-1">请填写您的年会参与意向，数据将自动同步</p>
         </div>
       </div>
 
@@ -314,8 +319,14 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
         </div>
 
         {message && (
-          <div className={`p-4 rounded-xl text-sm flex items-center justify-center gap-2 animate-pulse ${message.type === 'success' ? 'bg-green-500/20 text-green-400 border border-green-500/50' : 'bg-red-500/20 text-red-400 border border-red-500/50'}`}>
-            <span className="text-lg">{message.type === 'success' ? '✨' : '⚠️'}</span>
+          <div className={`p-4 rounded-xl text-sm flex items-center justify-center gap-2 animate-pulse ${
+            message.type === 'success' ? 'bg-green-500/20 text-green-400 border border-green-500/50' : 
+            message.type === 'warning' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50' :
+            'bg-red-500/20 text-red-400 border border-red-500/50'
+          }`}>
+            <span className="text-lg">
+              {message.type === 'success' ? '✨' : message.type === 'warning' ? '💾' : '⚠️'}
+            </span>
             <span className="font-medium">{message.text}</span>
           </div>
         )}
@@ -340,12 +351,12 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex-[2] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-xl shadow-blue-900/20 transform active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            className="flex-[2] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black py-4 rounded-xl shadow-xl shadow-blue-900/20 transform active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                同步中...
+                保存中...
               </>
             ) : '保存并提交'}
           </button>
