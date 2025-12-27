@@ -47,7 +47,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
           setIsViewMode(true);
         }
       } catch (e) {
-        console.error("加载数据失败:", e);
+        console.error("加载现有数据失败:", e);
       } finally {
         setIsLoading(false);
       }
@@ -77,19 +77,16 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
       setLastUpdated(timestamp);
       
       if (result.mode === 'cloud') {
-        setMessage({ type: 'success', text: '✨ 报名成功！云端已实时同步' });
-      } else if (!result.reason) {
-        setMessage({ type: 'success', text: '✅ 保存成功！(已存至本地缓存)' });
-      } else if (result.reason === 'network_error') {
-        setMessage({ type: 'warning', text: '📡 网络不稳定，数据已暂存本地' });
+        setMessage({ type: 'success', text: '✨ 报名成功！云端已同步' });
       } else {
-        setMessage({ type: 'warning', text: '⚠️ 云端同步异常，已为您保存至本地' });
+        // 即使云端失败，由于已存本地，逻辑上也算成功，但给出黄牌警告
+        setMessage({ type: 'warning', text: '⚠️ 云端同步异常，数据已保存在本地' });
       }
       
       setTimeout(() => {
         setMessage(null);
         setIsViewMode(true);
-      }, 2500);
+      }, 2000);
     } else {
       setMessage({ type: 'error', text: '❌ 提交失败，请重试' });
     }
@@ -99,7 +96,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
     return (
       <div className="max-w-2xl mx-auto mt-8 p-12 glass rounded-2xl flex flex-col items-center justify-center gap-4">
         <div className="w-10 h-10 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
-        <p className="text-slate-400 font-mono text-sm tracking-widest uppercase">Fetching Data...</p>
+        <p className="text-slate-400 font-mono text-sm tracking-widest uppercase">Fetching...</p>
       </div>
     );
   }
@@ -110,57 +107,56 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
         <div className="flex justify-between items-start mb-8 border-b border-white/10 pb-4">
           <div>
             <h2 className="text-2xl font-black text-green-400 flex items-center gap-2">
-              <span className="text-xl">✅</span> 报名信息已确认
+              <span className="text-xl">✅</span> 报名成功
             </h2>
-            <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest font-mono">Last Update: {lastUpdated}</p>
+            <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest font-mono">ID: {formData.employeeId} | UPDATED: {lastUpdated}</p>
           </div>
           <button 
             onClick={() => setIsViewMode(false)}
-            className="text-[10px] font-bold text-blue-400 hover:text-blue-300 transition-all bg-blue-400/10 px-3 py-1.5 rounded-lg border border-blue-400/20 uppercase"
+            className="text-[10px] font-bold text-blue-400 hover:text-blue-300 transition-all bg-blue-400/10 px-3 py-1.5 rounded-lg border border-blue-400/20"
           >
-            Edit Record
+            修改信息
           </button>
         </div>
 
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-slate-900/40 p-4 rounded-xl border border-white/5">
-              <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Name / 姓名</span>
+              <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">姓名</span>
               <span className="text-lg text-white font-medium">{formData.name}</span>
             </div>
             <div className="bg-slate-900/40 p-4 rounded-xl border border-white/5">
-              <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Staff ID / 工号</span>
+              <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">工号</span>
               <span className="text-lg text-white font-mono">{formData.employeeId}</span>
             </div>
             <div className="bg-slate-900/40 p-4 rounded-xl border border-white/5">
-              <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Dept. / 部门</span>
+              <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">部门</span>
               <span className="text-lg text-white font-medium">{formData.department}</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
              <div className="bg-slate-900/40 p-4 rounded-xl border border-white/5">
-              <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1 text-blue-400">Program / 节目名称</span>
+              <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1 text-blue-400">节目名称</span>
               <span className="text-md text-white font-medium">{formData.programName}</span>
             </div>
             <div className="bg-slate-900/40 p-4 rounded-xl border border-white/5">
-              <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Type / 表演类型</span>
+              <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">表演类型</span>
               <span className="text-md text-indigo-300 font-medium">{formData.programType}</span>
             </div>
           </div>
 
           <div className="bg-slate-900/40 p-5 rounded-xl border border-white/5">
-            <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">Suggestions / 建议</span>
-            <p className="text-slate-300 text-sm leading-relaxed italic">"{formData.recommendedProgram || '暂无建议。'}"</p>
+            <span className="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">建议</span>
+            <p className="text-slate-300 text-sm leading-relaxed italic">"{formData.recommendedProgram || '无'}"</p>
           </div>
 
           <div className="pt-6 border-t border-white/5">
             <button
               onClick={onLogout}
-              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-4 rounded-xl shadow-lg shadow-emerald-900/20 transform active:scale-[0.98] transition-all flex items-center justify-center gap-2 uppercase text-xs tracking-[0.2em]"
+              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-4 rounded-xl shadow-lg transition-all uppercase text-xs tracking-[0.2em]"
             >
-              <span>Done</span>
-              <span className="opacity-70 font-normal">/ 退出登录</span>
+              完成并退出
             </button>
           </div>
         </div>
@@ -173,25 +169,25 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
       <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
         <div>
           <h2 className="text-2xl font-black text-white tracking-tight">年会报名登记</h2>
-          <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-[0.3em] font-mono">Vivolight · 2026 Gala Registration</p>
+          <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-[0.3em] font-mono">Gala 2026 Registration</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Name / 姓名</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">姓名</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full bg-slate-900/30 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-white placeholder-slate-700"
+              className="w-full bg-slate-900/30 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none text-white"
               placeholder="请输入姓名"
               required
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Staff ID / 工号</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">工号</label>
             <input
               type="text"
               value={formData.employeeId}
@@ -203,11 +199,11 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           <div className="space-y-2">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Dept. / 部门</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">部门</label>
             <select
               value={formData.department}
               onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-              className="w-full bg-slate-900/30 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-white appearance-none"
+              className="w-full bg-slate-900/30 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none text-white appearance-none"
               required
             >
               <option value="" disabled className="bg-slate-900">请选择部门</option>
@@ -217,7 +213,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
             </select>
           </div>
           <div className="space-y-2">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Participants / 人数</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">人数</label>
             <div className="flex gap-4 pt-2">
               <label className="flex items-center gap-2 cursor-pointer group">
                 <input
@@ -226,7 +222,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
                   value="单人"
                   checked={formData.participantCount === '单人'}
                   onChange={() => setFormData(prev => ({ ...prev, participantCount: '单人' }))}
-                  className="w-4 h-4 text-blue-600 bg-slate-900 border-white/10 focus:ring-blue-500"
+                  className="w-4 h-4 text-blue-600 bg-slate-900 border-white/10"
                 />
                 <span className="text-sm text-slate-400 group-hover:text-white transition-colors">单人</span>
               </label>
@@ -237,7 +233,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
                   value="多人"
                   checked={formData.participantCount === '多人'}
                   onChange={() => setFormData(prev => ({ ...prev, participantCount: '多人' }))}
-                  className="w-4 h-4 text-blue-600 bg-slate-900 border-white/10 focus:ring-blue-500"
+                  className="w-4 h-4 text-blue-600 bg-slate-900 border-white/10"
                 />
                 <span className="text-sm text-slate-400 group-hover:text-white transition-colors">多人</span>
               </label>
@@ -247,22 +243,22 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Program Name / 节目名称</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">节目名称</label>
             <input
               type="text"
               value={formData.programName}
               onChange={(e) => setFormData(prev => ({ ...prev, programName: e.target.value }))}
-              className="w-full bg-slate-900/30 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-white placeholder-slate-700"
+              className="w-full bg-slate-900/30 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none text-white"
               placeholder="请输入节目名称"
               required
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Performance Type / 表演类型</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">表演类型</label>
             <select
               value={formData.programType}
               onChange={(e) => setFormData(prev => ({ ...prev, programType: e.target.value as any }))}
-              className="w-full bg-slate-900/30 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-white appearance-none"
+              className="w-full bg-slate-900/30 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none text-white appearance-none"
             >
               <option value="唱歌" className="bg-slate-900">唱歌</option>
               <option value="跳舞" className="bg-slate-900">跳舞</option>
@@ -275,26 +271,23 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
 
         {formData.participantCount === '多人' && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-2">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Members / 合作名单</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">合作名单</label>
             <textarea
               value={formData.participantList}
               onChange={(e) => setFormData(prev => ({ ...prev, participantList: e.target.value }))}
-              className="w-full bg-slate-900/30 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all h-24 resize-none text-white text-sm"
-              placeholder="请列出合作人的姓名和工号"
+              className="w-full bg-slate-900/30 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none h-20 resize-none text-white text-sm"
+              placeholder="请填写合作人姓名和工号"
               required={formData.participantCount === '多人'}
             />
           </div>
         )}
 
         <div className="space-y-2">
-          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 flex justify-between">
-            <span>Suggestions / 建议</span>
-            <span className="text-[8px] opacity-40 font-normal">Optional</span>
-          </label>
+          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">建议</label>
           <textarea
             value={formData.recommendedProgram}
             onChange={(e) => setFormData(prev => ({ ...prev, recommendedProgram: e.target.value }))}
-            className="w-full bg-slate-900/30 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all h-24 resize-none text-white text-sm"
+            className="w-full bg-slate-900/30 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none h-20 resize-none text-white text-sm"
             placeholder="您期待看到什么样的节目？"
           />
         </div>
@@ -305,10 +298,8 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
             message.type === 'warning' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
             'bg-red-500/10 text-red-400 border-red-500/20'
           }`}>
-            <span className="text-lg">
-              {message.type === 'success' ? '✨' : message.type === 'warning' ? '⚠️' : '❌'}
-            </span>
-            <span className="font-bold tracking-tight">{message.text}</span>
+            <span>{message.type === 'success' ? '✨' : '⚠️'}</span>
+            <span className="font-bold">{message.text}</span>
           </div>
         )}
 
@@ -317,21 +308,16 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialId, onLogout 
             type="button"
             onClick={onLogout}
             disabled={isSubmitting}
-            className="flex-1 bg-slate-800/40 hover:bg-slate-800/80 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] border border-white/5 disabled:opacity-50 uppercase text-[10px] tracking-widest"
+            className="flex-1 bg-slate-800/40 hover:bg-slate-800/80 text-white font-bold py-4 rounded-xl transition-all border border-white/5 uppercase text-[10px] tracking-widest"
           >
-            Cancel
+            取消
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex-[2] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black py-4 rounded-xl shadow-xl shadow-blue-900/20 transform active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 uppercase text-[10px] tracking-widest"
+            className="flex-[2] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black py-4 rounded-xl shadow-xl transition-all flex items-center justify-center gap-2 uppercase text-[10px] tracking-widest"
           >
-            {isSubmitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Saving...
-              </>
-            ) : 'Save & Submit'}
+            {isSubmitting ? '正在保存...' : '保存并提交'}
           </button>
         </div>
       </form>

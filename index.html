@@ -12,23 +12,28 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <!-- 
-      💡 数据库初始化指南 (请在 Supabase SQL Editor 执行以下代码):
-      
-      create table annual_party_list (
-        employee_id text primary key,
-        name text not null,
-        department text,
-        program_name text,
-        program_type text,
-        participant_count text,
-        participant_list text,
-        recommended_program text,
-        timestamp text
+      🛠️ 同步异常解决指南:
+      如果遇到“云端同步异常”，请在 Supabase 后台 -> SQL Editor 中运行以下代码：
+
+      -- A. 创建数据表 (注意字段名必须完全一致)
+      CREATE TABLE IF NOT EXISTS annual_party_list (
+        employee_id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        department TEXT,
+        program_name TEXT,
+        program_type TEXT,
+        participant_count TEXT,
+        participant_list TEXT,
+        recommended_program TEXT,
+        timestamp TEXT
       );
 
-      -- 开启所有人可写权限 (开发演示用)
-      alter table annual_party_list enable row level security;
-      create policy "Allow public access" on annual_party_list for all using (true) with check (true);
+      -- B. 关闭 RLS (或者设置所有人可写，用于快速测试)
+      ALTER TABLE annual_party_list DISABLE ROW LEVEL SECURITY;
+      
+      -- C. 或者开启 RLS 并允许匿名写入 (更安全)
+      -- ALTER TABLE annual_party_list ENABLE ROW LEVEL SECURITY;
+      -- CREATE POLICY "Allow public insert/update" ON annual_party_list FOR ALL USING (true) WITH CHECK (true);
     -->
     
     <!-- 2. Supabase 核心配置区 -->
