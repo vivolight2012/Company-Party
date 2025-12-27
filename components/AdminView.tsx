@@ -1,12 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { getRegistrations, exportToCSV } from '../services/storage';
+import { getRegistrations, exportToCSV, deleteRegistration } from '../services/storage';
 import { RegistrationData } from '../types';
 
 export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [registrations, setRegistrations] = useState<RegistrationData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const fetchAllData = async () => {
     setIsLoading(true);
@@ -19,6 +21,17 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     fetchAllData();
   }, []);
 
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setIsDeleting(true);
+    const success = await deleteRegistration(deleteId);
+    if (success) {
+      setRegistrations(prev => prev.filter(r => r.employeeId !== deleteId));
+    }
+    setDeleteId(null);
+    setIsDeleting(false);
+  };
+
   const filteredData = registrations.filter(
     r => (r.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
          (r.employeeId || '').includes(searchTerm) ||
@@ -26,7 +39,7 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   );
 
   return (
-    <div className="w-full max-w-7xl mx-auto mt-8 p-6 glass rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-500">
+    <div className="w-full max-w-7xl mx-auto mt-8 p-6 glass rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-500 relative">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-indigo-400">信息管理后台</h2>
@@ -84,12 +97,13 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 <th className="px-4 py-4">表演类型</th>
                 <th className="px-4 py-4">建议</th>
                 <th className="px-4 py-4">最后更新</th>
+                <th className="px-4 py-4 text-center">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
               {filteredData.length > 0 ? (
                 filteredData.map((reg, index) => (
-                  <tr key={reg.employeeId} className="hover:bg-slate-700/30 transition-colors">
+                  <tr key={reg.employeeId} className="hover:bg-slate-700/30 transition-colors group">
                     <td className="px-4 py-4 text-slate-500 font-mono text-center">{index + 1}</td>
                     <td className="px-4 py-4 text-slate-400 font-mono">{reg.employeeId}</td>
                     <td className="px-4 py-4 font-medium text-white">{reg.name}</td>
@@ -116,11 +130,19 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                       </div>
                     </td>
                     <td className="px-4 py-4 text-[10px] text-slate-500 font-mono">{reg.timestamp}</td>
+                    <td className="px-4 py-4 text-center">
+                      <button 
+                        onClick={() => setDeleteId(reg.employeeId)}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-400/10 px-3 py-1.5 rounded-lg transition-all text-xs border border-transparent hover:border-red-400/20"
+                      >
+                        删除
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={9} className="px-6 py-12 text-center text-slate-500 italic">
+                  <td colSpan={10} className="px-6 py-12 text-center text-slate-500 italic">
                     暂无报名记录
                   </td>
                 </tr>
@@ -129,6 +151,40 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           </table>
         )}
       </div>
+
+      {/* 自定义删除确认对话框 */}
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="glass max-w-sm w-full p-8 rounded-[2rem] border border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+                ⚠️
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">确认删除？</h3>
+              <p className="text-slate-400 text-sm mb-8">
+                您确定要删除该员工的报名信息吗？此操作将同步云端且不可撤销。
+              </p>
+              
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setDeleteId(null)}
+                  disabled={isDeleting}
+                  className="flex-1 bg-slate-800/50 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition-all border border-white/5 uppercase text-[10px] tracking-widest disabled:opacity-50"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex-1 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 uppercase text-[10px] tracking-widest disabled:opacity-70"
+                >
+                  {isDeleting ? '正在同步...' : '确定删除'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

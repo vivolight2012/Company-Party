@@ -92,39 +92,26 @@ export const getRegistrations = async (): Promise<RegistrationData[]> => {
       id: item.employee_id
     }));
 
-    // 【重要】合并逻辑：以云端为准，补充本地有但云端没有的数据
-    const merged = [...cloudData];
-    localData.forEach(localItem => {
-      if (!merged.find(c => c.employeeId === localItem.employeeId)) {
-        merged.push(localItem);
-      }
-    });
-    
-    return merged;
+    // 合并逻辑：以云端为准
+    return cloudData;
   } catch (error) {
-    console.error('获取数据发生未知错误:', error);
     return localData;
   }
 };
 
 /**
- * 2. 核心保存函数 (增加重试与清洗)
+ * 2. 核心保存函数
  */
 export const saveRegistration = async (reg: RegistrationData): Promise<{
   success: boolean, 
   mode: 'cloud' | 'local', 
   reason?: 'unconfigured' | 'network_error' | 'database_error'
 }> => {
-  // A. 任何情况下先存本地，保证数据不丢
   saveToLocal(reg);
-  
   const client = getSupabase();
-  if (!client) {
-    return { success: true, mode: 'local', reason: 'unconfigured' };
-  }
+  if (!client) return { success: true, mode: 'local', reason: 'unconfigured' };
 
   try {
-    // B. 数据清洗：Supabase 不接受 undefined
     const payload = {
       employee_id: String(reg.employeeId || ''),
       name: String(reg.name || ''),
@@ -137,28 +124,37 @@ export const saveRegistration = async (reg: RegistrationData): Promise<{
       timestamp: String(reg.timestamp || new Date().toLocaleString())
     };
 
-    // C. 执行同步
-    const { error } = await client
-      .from(TABLE_NAME)
-      .upsert(payload, { onConflict: 'employee_id' });
-
-    if (error) {
-      // 这里的错误会直接导致“云端同步异常”
-      console.error('Supabase 数据库报错:', error.code, error.message);
-      if (error.code === '42P01') {
-        console.error('原因分析: 数据库表 annual_party_list 不存在！请检查 SQL Editor。');
-      }
-      throw error;
-    }
-    
+    const { error } = await client.from(TABLE_NAME).upsert(payload, { onConflict: 'employee_id' });
+    if (error) throw error;
     return { success: true, mode: 'cloud' };
   } catch (error: any) {
-    const isNetwork = error.message?.includes('fetch') || error.code === 'PGRST301';
-    return { 
-      success: true, 
-      mode: 'local', 
-      reason: isNetwork ? 'network_error' : 'database_error' 
-    };
+    return { success: true, mode: 'local', reason: 'database_error' };
+  }
+};
+
+/**
+ * 3. 删除报名信息
+ */
+export const deleteRegistration = async (employeeId: string): Promise<boolean> => {
+  // 从本地删除
+  const localData = getLocalRegistrations();
+  const filtered = localData.filter(r => r.employeeId !== employeeId);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+
+  const client = getSupabase();
+  if (!client) return true;
+
+  try {
+    const { error } = await client
+      .from(TABLE_NAME)
+      .delete()
+      .eq('employee_id', employeeId);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('云端删除失败:', error);
+    return false;
   }
 };
 
