@@ -26,7 +26,7 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   );
 
   return (
-    <div className="w-full max-w-6xl mx-auto mt-8 p-6 glass rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-500">
+    <div className="w-full max-w-7xl mx-auto mt-8 p-6 glass rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-indigo-400">信息管理后台</h2>
@@ -75,42 +75,48 @@ export const AdminView: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-800/80 text-slate-300 font-medium whitespace-nowrap">
               <tr>
-                <th className="px-6 py-4">姓名</th>
-                <th className="px-6 py-4">工号</th>
-                <th className="px-6 py-4">部门</th>
-                <th className="px-6 py-4">节目名称</th>
-                <th className="px-6 py-4">类型</th>
-                <th className="px-6 py-4">人数</th>
-                <th className="px-6 py-4">节目推荐</th>
-                <th className="px-6 py-4">最后更新</th>
+                <th className="px-4 py-4">序号</th>
+                <th className="px-4 py-4">工号</th>
+                <th className="px-4 py-4">姓名</th>
+                <th className="px-4 py-4">部门</th>
+                <th className="px-4 py-4">节目名称</th>
+                <th className="px-4 py-4">人数</th>
+                <th className="px-4 py-4">表演类型</th>
+                <th className="px-4 py-4">建议</th>
+                <th className="px-4 py-4">最后更新</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
               {filteredData.length > 0 ? (
-                filteredData.map((reg) => (
+                filteredData.map((reg, index) => (
                   <tr key={reg.employeeId} className="hover:bg-slate-700/30 transition-colors">
-                    <td className="px-6 py-4 font-medium text-white">{reg.name}</td>
-                    <td className="px-6 py-4 text-slate-400 font-mono">{reg.employeeId}</td>
-                    <td className="px-6 py-4 text-slate-300">{reg.department}</td>
-                    <td className="px-6 py-4 text-slate-300">
-                      <div>{reg.programName}</div>
+                    <td className="px-4 py-4 text-slate-500 font-mono">{index + 1}</td>
+                    <td className="px-4 py-4 text-slate-400 font-mono">{reg.employeeId}</td>
+                    <td className="px-4 py-4 font-medium text-white">{reg.name}</td>
+                    <td className="px-4 py-4 text-slate-300">{reg.department}</td>
+                    <td className="px-4 py-4 text-slate-300">
+                      <div className="font-medium text-indigo-200">{reg.programName}</div>
                       {reg.participantCount === '多人' && (
-                         <div className="text-xs text-slate-500 italic mt-1 max-w-[150px] truncate" title={reg.participantList}>
-                           成员: {reg.participantList}
-                         </div>
+                        <div className="text-[10px] text-slate-500 mt-0.5 italic truncate max-w-[120px]" title={reg.participantList}>
+                          名单: {reg.participantList}
+                        </div>
                       )}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 rounded bg-slate-800 text-xs text-indigo-300 border border-slate-700">{reg.programType}</span>
+                    <td className="px-4 py-4 text-slate-300">{reg.participantCount}</td>
+                    <td className="px-4 py-4">
+                      <span className="px-2 py-1 rounded bg-slate-800 text-xs text-indigo-300 border border-slate-700 whitespace-nowrap">{reg.programType}</span>
                     </td>
-                    <td className="px-6 py-4 text-slate-300">{reg.participantCount}</td>
-                    <td className="px-6 py-4 text-slate-300 max-w-[150px] truncate">{reg.recommendedProgram || '-'}</td>
-                    <td className="px-6 py-4 text-xs text-slate-500">{reg.timestamp}</td>
+                    <td className="px-4 py-4 text-slate-300 max-w-[180px]">
+                      <div className="truncate text-xs italic" title={reg.recommendedProgram}>
+                        {reg.recommendedProgram || '-'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-[10px] text-slate-500 whitespace-nowrap">{reg.timestamp}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-slate-500 italic">
+                  <td colSpan={9} className="px-6 py-12 text-center text-slate-500 italic">
                     未找到匹配的报名记录
                   </td>
                 </tr>

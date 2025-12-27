@@ -8,14 +8,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     
-    <!-- 1. 引入 Supabase CDN -->
+    <!-- 1. 引入 Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- 4. 配置 SUPABASE_URL 和 SUPABASE_ANON_KEY -->
+    <!-- 
+      💡 数据库初始化指南 (请在 Supabase SQL Editor 执行以下代码):
+      
+      create table annual_party_list (
+        employee_id text primary key,
+        name text not null,
+        department text,
+        program_name text,
+        program_type text,
+        participant_count text,
+        participant_list text,
+        recommended_program text,
+        timestamp text
+      );
+
+      -- 开启所有人可写权限 (开发演示用)
+      alter table annual_party_list enable row level security;
+      create policy "Allow public access" on annual_party_list for all using (true) with check (true);
+    -->
+    
+    <!-- 2. Supabase 核心配置区 -->
     <script>
         window.SUPABASE_CONFIG = {
-            url: 'https://你的项目ID.supabase.co', // 请替换为你的 Supabase URL
-            anonKey: '你的匿名Key' // 请替换为你的 Supabase Anon Key
+            url: 'https://hsksalysrpaaeudncard.supabase.co', 
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhza3NhbHlzcnBhYWV1ZG5jYXJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTQxMDAsImV4cCI6MjA4MjMzMDEwMH0.lVnv82c-RAgHPYcs6fbI0mW6FEFIqfT65WiSfGexjKA' 
         };
     </script>
 
@@ -50,11 +70,6 @@
             height: 100%;
             background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.5), rgba(168, 85, 247, 0.5), transparent);
             box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
-        }
-
-        .laser-line:nth-child(even) {
-            background: linear-gradient(to bottom, transparent, rgba(236, 72, 153, 0.4), rgba(59, 130, 246, 0.4), transparent);
-            box-shadow: 0 0 8px rgba(236, 72, 153, 0.3);
         }
 
         .particle {
