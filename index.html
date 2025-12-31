@@ -5,38 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026公司年会盛典报名系统</title>
+    
+    <!-- 1. 最优先注入环境变量补丁，防止库崩溃 -->
+    <script>
+      window.process = { env: { NODE_ENV: 'production', API_KEY: '' } };
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     
-    <!-- 1. 引入 Supabase SDK -->
+    <!-- 2. 引入 Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- 
-      🛠️ 同步异常解决指南:
-      如果遇到“云端同步异常”，请在 Supabase 后台 -> SQL Editor 中运行以下代码：
-
-      -- A. 创建数据表 (注意字段名必须完全一致)
-      CREATE TABLE IF NOT EXISTS annual_party_list (
-        employee_id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        department TEXT,
-        program_name TEXT,
-        program_type TEXT,
-        participant_count TEXT,
-        participant_list TEXT,
-        recommended_program TEXT,
-        timestamp TEXT
-      );
-
-      -- B. 关闭 RLS (或者设置所有人可写，用于快速测试)
-      ALTER TABLE annual_party_list DISABLE ROW LEVEL SECURITY;
-      
-      -- C. 或者开启 RLS 并允许匿名写入 (更安全)
-      -- ALTER TABLE annual_party_list ENABLE ROW LEVEL SECURITY;
-      -- CREATE POLICY "Allow public insert/update" ON annual_party_list FOR ALL USING (true) WITH CHECK (true);
-    -->
-    
-    <!-- 2. Supabase 核心配置区 -->
+    <!-- Supabase 核心配置 -->
     <script>
         window.SUPABASE_CONFIG = {
             url: 'https://hsksalysrpaaeudncard.supabase.co', 
@@ -55,6 +36,7 @@
             color: #f8fafc;
             overflow-x: hidden;
             position: relative;
+            margin: 0;
         }
 
         .laser-wall {
@@ -120,12 +102,16 @@
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
     </style>
-<script type="importmap">
+
+    <!-- 3. 修正后的 Import Map -->
+    <script type="importmap">
 {
   "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3"
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
@@ -135,22 +121,25 @@
     <div id="root"></div>
     <script>
         const wall = document.getElementById('laserWall');
-        for (let i = 0; i < 50; i++) {
-            const line = document.createElement('div');
-            line.className = 'laser-line';
-            line.style.left = (Math.random() * 100) + '%';
-            line.style.opacity = (Math.random() * 0.4 + 0.1).toString();
-            wall.appendChild(line);
-        }
-        for (let i = 0; i < 100; i++) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = Math.random() * 100 + '%';
-            p.style.top = Math.random() * 100 + '%';
-            p.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
-            wall.appendChild(p);
+        if (wall) {
+            for (let i = 0; i < 50; i++) {
+                const line = document.createElement('div');
+                line.className = 'laser-line';
+                line.style.left = (Math.random() * 100) + '%';
+                line.style.opacity = (Math.random() * 0.4 + 0.1).toString();
+                wall.appendChild(line);
+            }
+            for (let i = 0; i < 100; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.top = Math.random() * 100 + '%';
+                p.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+                wall.appendChild(p);
+            }
         }
     </script>
-    <script type="module" src="/index.tsx"></script>
+    <!-- 4. 使用相对路径引用 -->
+    <script type="module" src="./index.tsx"></script>
 </body>
 </html>

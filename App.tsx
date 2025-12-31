@@ -1,13 +1,13 @@
+
 import React, { useState } from 'react';
-import { ViewRole } from './types';
-import { EmployeeView } from './components/EmployeeView';
-import { AdminView } from './components/AdminView';
-import { AgendaView } from './components/AgendaView';
+import { ViewRole } from './types.ts';
+import { EmployeeView } from './components/EmployeeView.tsx';
+import { AdminView } from './components/AdminView.tsx';
+import { AgendaView } from './components/AgendaView.tsx';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'login' | 'employee' | 'admin' | 'agenda'>('login');
   const [role, setRole] = useState<ViewRole>('employee');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [employeeIdInput, setEmployeeIdInput] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +15,6 @@ const App: React.FC = () => {
   const handleEmployeeLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (employeeIdInput.trim()) {
-      setIsLoggedIn(true);
       setView('employee');
       setError(null);
     } else {
@@ -26,7 +25,6 @@ const App: React.FC = () => {
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (adminPassword === '12') {
-      setIsLoggedIn(true);
       setView('admin');
       setError(null);
     } else {
@@ -35,7 +33,6 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
     setView('login');
     setEmployeeIdInput('');
     setAdminPassword('');
@@ -44,18 +41,17 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center py-8 px-4 sm:px-6 lg:px-8 relative z-10">
-      {/* 品牌与标题部分 */}
-      <div className="text-center mb-8 animate-in fade-in slide-in-from-top-6 duration-1000 flex flex-col items-center">
+      <div className="text-center mb-8 flex flex-col items-center">
         <div className="flex flex-col items-center mb-8 group">
           <div className="space-y-2">
-            <h2 className="text-sm md:text-base font-bold tracking-[0.5em] text-white/80 uppercase">
+            <h2 className="text-sm md:text-base font-bold tracking-[0.5em] text-white/80 uppercase text-center">
               深圳市中科微光医疗器械技术有限公司
             </h2>
             <div className="h-px w-3/4 mx-auto bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent"></div>
           </div>
         </div>
 
-        <h1 className="text-4xl md:text-7xl font-extrabold tech-title mb-6">
+        <h1 className="text-4xl md:text-7xl font-extrabold tech-title mb-6 text-center">
           2026年公司年会盛典
         </h1>
         
@@ -76,7 +72,7 @@ const App: React.FC = () => {
       </div>
 
       {view === 'login' && (
-        <div className="w-full max-w-md p-8 glass rounded-[2.5rem] shadow-2xl animate-in fade-in zoom-in-95 duration-500 border border-white/5">
+        <div className="w-full max-w-md p-8 glass rounded-[2.5rem] shadow-2xl border border-white/5">
           <div className="flex bg-slate-900/60 rounded-2xl p-1 mb-10 border border-slate-800/50">
             <button
               onClick={() => { setRole('employee'); setError(null); }}
@@ -109,10 +105,9 @@ const App: React.FC = () => {
                     placeholder="请输入工号"
                     required
                   />
-                  <div className="absolute inset-0 rounded-2xl bg-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                 </div>
               </div>
-              {error && <p className="text-red-400 text-sm text-center font-medium animate-bounce">{error}</p>}
+              {error && <p className="text-red-400 text-sm text-center font-medium">{error}</p>}
               
               <div className="space-y-4">
                 <button
@@ -148,7 +143,7 @@ const App: React.FC = () => {
                   required
                 />
               </div>
-              {error && <p className="text-red-400 text-sm text-center font-medium animate-bounce">{error}</p>}
+              {error && <p className="text-red-400 text-sm text-center font-medium">{error}</p>}
               <button
                 type="submit"
                 className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-purple-900/40 active:scale-[0.98]"
@@ -164,15 +159,11 @@ const App: React.FC = () => {
       {view === 'admin' && <AdminView onLogout={handleLogout} />}
       {view === 'agenda' && <AgendaView onBack={() => setView('login')} />}
 
-      {/* 页脚装饰 */}
       <div className="mt-16 text-slate-600 text-[10px] flex flex-col items-center gap-4">
         <div className="flex items-center gap-6">
-          <span className="uppercase tracking-widest">© 2026 Annual Gala Committee</span>
+          <span className="uppercase tracking-widest text-center">© 2026 Annual Gala Committee</span>
           <span className="h-4 w-px bg-slate-800"></span>
-          <span className="uppercase tracking-widest">Vivolight Medical Technology</span>
-        </div>
-        <div className="flex gap-2">
-            {[1,2,3,4,5].map(i => <div key={i} className={`w-1 h-1 rounded-full bg-slate-800 animate-pulse`} style={{animationDelay: `${i*0.2}s`}}></div>)}
+          <span className="uppercase tracking-widest text-center">Vivolight Medical Technology</span>
         </div>
       </div>
     </div>
