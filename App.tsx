@@ -25,7 +25,7 @@ const App: React.FC = () => {
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminPassword === '123') {
+    if (adminPassword === '12') {
       setIsLoggedIn(true);
       setView('admin');
       setError(null);
